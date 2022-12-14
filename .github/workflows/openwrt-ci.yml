@@ -8,21 +8,14 @@
 name: OpenWrt-CI
 
 on:
-  schedule:
-    - cron: 0 20 * * *
   release:
     types: [published]
-  push:
-    branches:
-      - master
     
 permissions:
   contents: read
 
 jobs:
-
   build_openwrt:
-
     permissions:
       contents: write # for release creation
 
@@ -106,11 +99,11 @@ jobs:
         with:
           name: OpenWrt_firmware
           path: ./bin/targets/
-  
-
       - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.event == 'release'
+        uses: svenstaro/upload-release-action@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./artifact/firmware/*
+          tag: ${{ github.ref }}
+          file_glob: true
